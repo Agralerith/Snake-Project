@@ -254,8 +254,8 @@ void Draw()
 				}
 				if (!print)
 				{
-					cout << " ";
-				}
+				cout << " ";
+			}
 			}
 
 			if (j == mapWidth - 1)
@@ -417,9 +417,9 @@ void Logic()
 	for (int i = 0; i < tailLength; ++i)
 	{
 		if (tailX[i] == headXPos && tailY[i] == headYPos)
-		{
-			isGameOver = true;
-		}
+	{
+		isGameOver = true;
+	}
 	}
 
 	if (headXPos == foodXPos && headYPos == foodYPos)
