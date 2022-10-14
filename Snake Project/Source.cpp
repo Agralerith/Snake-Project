@@ -164,7 +164,7 @@ void Setup()
 {
 	srand(time(0));
 	isGameOver = false;
-	dir = STOP;
+	dir = UP;
 	//gotoxy(mapWidth / 2, mapHeight / 2);
 	headXPos = mapWidth / 2;
 	headYPos = mapHeight / 2;
@@ -180,22 +180,29 @@ void Draw()
 {
 	system("cls");
 
-	for (int i = 0; i < mapWidth + 1; ++i)
+	for (int i = 0; i < mapWidth + 47; ++i)
 	{
-		cout << "#";
+		if (i >= 45)
+		{
+			cout << "#";
+		}
+		else if (i < 45)
+		{
+			cout << " ";
+		}
 	}
 	cout << endl;
 
 	for (int i = 0; i < mapHeight; ++i)
 	{
-		for (int j = 0; j < mapWidth; ++j)
+		for (int j = 0; j < mapWidth + 45; ++j)
 		{
-			if (j == 0)
+			if (j == 45)
 			{
 				cout << "#";
 			}
 
-			if (i == headYPos && j == headXPos)
+			if (i == headYPos && j == headXPos + 45)
 			{
 				if (snakeType == 4)
 				{
@@ -210,7 +217,7 @@ void Draw()
 					cout << "$";
 				}
 			}
-			else if (i == foodYPos && j == foodXPos)
+			else if (i == foodYPos && j == foodXPos + 45)
 			{
 				if (snakeType == 4)
 				{
@@ -225,8 +232,7 @@ void Draw()
 					cout << "$";
 				}
 			}
-			else if (i == poisonFoodYPos0/* && i == poisonFoodYPos1*/
-				&& j == poisonFoodXPos0 /*&& j == poisonFoodXPos1*/)
+			else if (i == poisonFoodYPos0 && j == poisonFoodXPos0  + 45)
 			{
 				if (snakeType == 4)
 				{
@@ -246,7 +252,7 @@ void Draw()
 				bool print = false;
 				for (int u = 0; u < tailLength; ++u)
 				{
-					if (tailX[u] == j && tailY[u] == i)
+					if (tailX[u] + 45 == j && tailY[u] == i)
 					{
 						cout << "*";
 						print = true;
@@ -258,7 +264,7 @@ void Draw()
 			}
 			}
 
-			if (j == mapWidth - 1)
+			if (j == mapWidth + 44)
 			{
 				cout << "#";
 			}
@@ -266,13 +272,31 @@ void Draw()
 		cout << endl;
 	}
 
-	for (int i = 0; i < mapWidth + 1; ++i)
+	for (int i = 0; i < mapWidth + 47; ++i)
 	{
-		cout << "#";
+		if (i >= 45)
+		{
+			cout << "#";
+		}
+		else if (i < 45)
+		{
+			cout << " ";
+		}
 	}
+
 	cout << endl;
-	cout << "Score:" << score << endl;
-	cout << snakeType;
+
+	for (int i = 0; i < mapWidth + 26; ++i)
+	{
+		if (i >= mapWidth + 25)
+		{
+			cout << "Score: " << score << endl;
+		}
+		else if (i < mapWidth + 25)
+		{
+			cout << " ";
+		}
+	}
 }
 
 void Input()
@@ -282,16 +306,28 @@ void Input()
 		switch (_getch())
 		{
 		case 'w':
-			dir = UP;
+			if (dir != DOWN)
+			{
+				dir = UP;
+			}
 			break;
 		case 's':
-			dir = DOWN;
+			if (dir != UP)
+			{
+				dir = DOWN;
+			}
 			break;
 		case 'd':
-			dir = RIGHT;
+			if (dir != LEFT)
+			{
+				dir = RIGHT;
+			}
 			break;
 		case 'a':
-			dir = LEFT;
+			if (dir != RIGHT)
+			{
+				dir = LEFT;
+			}
 			break;
 		}
 	}
