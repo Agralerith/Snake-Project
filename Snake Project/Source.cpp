@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <conio.h>
-#include <windows.h>
+#include <Windows.h>
 
 using namespace std;
 
@@ -21,9 +21,7 @@ int headYPos;
 int foodXPos;
 int foodYPos;
 int poisonFoodXPos0;
-//int poisonFoodXPos1;
 int poisonFoodYPos0;
-//int poisonFoodYPos1;
 
 int mapWidth;
 int mapHeight;
@@ -36,6 +34,8 @@ int tailY[100];
 int tailLength;
 
 bool isChooseCompleted = false;
+
+int snakeSpeed;
 
 enum eDirection
 {
@@ -51,6 +51,9 @@ eDirection dir;
 int SetMapWidth(char choice);
 int SetMapHeight(char choice);
 int SetSnakeType(char choice);
+void GameOverScene(bool snakePoisoned, bool snakeCollided);
+void RestartGame();
+void main();
 
 //void gotoxy(int x, int y)
 //{
@@ -62,31 +65,29 @@ int SetSnakeType(char choice);
 
 void PlayerChoice()
 {
-	char playerChoiceWidth, playerChoiceHeight, playerChoiceSnake;
+	char playerChoiceSnake;
+	int  playerChoiceWidth, playerChoiceHeight;
 
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 11);
 	do
 	{
-		cout << "Choose the width of the map." << endl;
-		cout << "Press 'Q' key for 10." << endl;
-		cout << "Press 'W' key for 20." << endl;
-		cout << "Press 'E' key for 30." << endl;
+		cout << "Enter the width of the map." << endl;
+		cout << "From 10 - 30." << endl;
 		cin >> playerChoiceWidth;
-	} while (playerChoiceWidth != 'q' && playerChoiceWidth != 'w' && playerChoiceWidth != 'e'
-		&& playerChoiceWidth != 'Q' && playerChoiceWidth != 'W' && playerChoiceWidth != 'E');
+		cout << endl << endl << endl;
+	} while (playerChoiceWidth < 10 || playerChoiceWidth > 30);
 
-	mapWidth = SetMapWidth(playerChoiceWidth);
+	mapWidth = playerChoiceWidth;
 
 	do
 	{
-		cout << "Choose the height of the map." << endl;
-		cout << "Press 'Q' key for 10." << endl;
-		cout << "Press 'W' key for 20." << endl;
-		cout << "Press 'E' key for 30." << endl;
+		cout << "Enter the height of the map." << endl;
+		cout << "From 10 - 30." << endl;
 		cin >> playerChoiceHeight;
-	} while (playerChoiceHeight != 'q' && playerChoiceHeight != 'w' && playerChoiceHeight != 'e'
-		&& playerChoiceHeight != 'Q' && playerChoiceHeight != 'W' && playerChoiceHeight != 'E');
+		cout << endl << endl << endl;
+	} while (playerChoiceHeight < 10 || playerChoiceHeight > 30);
 
-	mapHeight = SetMapHeight(playerChoiceHeight);
+	mapHeight = playerChoiceHeight;
 
 	cout << "The map size is " << mapWidth << " X " << mapHeight << endl;
 
@@ -103,43 +104,8 @@ void PlayerChoice()
 	snakeType = SetSnakeType(playerChoiceSnake);
 	cout << "The snake you choose moves " << snakeType << " steps in a second" << endl;
 
-	isChooseCompleted = true;
-}
-
-int SetMapWidth(char choice)
-{
-	int caseWidth;
-	switch (choice)
-	{
-	case 'Q': case 'q':
-		caseWidth = 10;
-		break;
-	case 'W': case 'w':
-		caseWidth = 20;
-		break;
-	case 'E': case 'e':
-		caseWidth = 30;
-		break;
-	}
-	return caseWidth;
-}
-
-int SetMapHeight(char choice)
-{
-	int caseHeight;
-	switch (choice)
-	{
-	case 'Q': case 'q':
-		caseHeight = 10;
-		break;
-	case 'W': case 'w':
-		caseHeight = 20;
-		break;
-	case 'E': case 'e':
-		caseHeight = 30;
-		break;
-	}
-	return caseHeight;
+	isChooseCompleted = true;	
+	main();
 }
 
 int SetSnakeType(char choice)
@@ -149,12 +115,15 @@ int SetSnakeType(char choice)
 	{
 	case 'Q': case 'q':
 		snakeType = 4;
+		snakeSpeed = 175;
 		break;
 	case 'W': case 'w':
 		snakeType = 5;
+		snakeSpeed = 162;
 		break;
 	case 'E': case 'e':
 		snakeType = 6;
+		snakeSpeed = 150;
 		break;
 	}
 	return snakeType;
@@ -172,8 +141,6 @@ void Setup()
 	foodYPos = rand() % mapHeight;
 	poisonFoodXPos0 = rand() % mapWidth / 2;
 	poisonFoodYPos0 = rand() % mapHeight / 2;
-	//poisonFoodXPos1 = rand() % mapWidth / 3;
-	//poisonFoodYPos1 = rand() % mapHeight / 3;
 }
 
 void Draw()
@@ -184,6 +151,7 @@ void Draw()
 	{
 		if (i >= 45)
 		{
+			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 9);
 			cout << "#";
 		}
 		else if (i < 45)
@@ -199,6 +167,7 @@ void Draw()
 		{
 			if (j == 45)
 			{
+				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 9);
 				cout << "#";
 			}
 
@@ -206,14 +175,17 @@ void Draw()
 			{
 				if (snakeType == 4)
 				{
+					SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 14);
 					cout << "@";
 				}
 				else if (snakeType == 5)
 				{
+					SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 14);
 					cout << "#";
 				}
 				else if (snakeType == 6)
 				{
+					SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 14);
 					cout << "$";
 				}
 			}
@@ -221,14 +193,17 @@ void Draw()
 			{
 				if (snakeType == 4)
 				{
+					SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
 					cout << "@";
 				}
 				else if (snakeType == 5)
 				{
+					SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
 					cout << "#";
 				}
 				else if (snakeType == 6)
 				{
+					SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
 					cout << "$";
 				}
 			}
@@ -236,14 +211,17 @@ void Draw()
 			{
 				if (snakeType == 4)
 				{
+					SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 10);
 					cout << "!";
 				}
 				else if (snakeType == 5)
 				{
+					SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 10);
 					cout << "+";
 				}
 				else if (snakeType == 6)
 				{
+					SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 10);
 					cout << "&";
 				}
 			}
@@ -254,6 +232,7 @@ void Draw()
 				{
 					if (tailX[u] + 45 == j && tailY[u] == i)
 					{
+						SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 12);
 						cout << "*";
 						print = true;
 					}
@@ -266,6 +245,7 @@ void Draw()
 
 			if (j == mapWidth + 44)
 			{
+				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 9);
 				cout << "#";
 			}
 		}
@@ -276,6 +256,7 @@ void Draw()
 	{
 		if (i >= 45)
 		{
+			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 9);
 			cout << "#";
 		}
 		else if (i < 45)
@@ -290,6 +271,7 @@ void Draw()
 	{
 		if (i >= mapWidth + 25)
 		{
+			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 13);
 			cout << "Score: " << score << endl;
 		}
 		else if (i < mapWidth + 25)
@@ -336,6 +318,8 @@ void Input()
 
 void Logic()
 {
+	bool isSnakePoisoned = false;
+	bool isHeadHitTail = false;
 	int prevX = tailX[0];
 	int prevY = tailY[0];
 	int prevTwoX;
@@ -429,7 +413,8 @@ void Logic()
 
 	if (headXPos == poisonFoodXPos0 && headYPos == poisonFoodYPos0)
 	{
-		isGameOver = true;
+		isSnakePoisoned = true;
+		GameOverScene(isSnakePoisoned, isHeadHitTail);
 	}
 
 	if (headXPos >= mapWidth)
@@ -453,24 +438,49 @@ void Logic()
 	for (int i = 0; i < tailLength; ++i)
 	{
 		if (tailX[i] == headXPos && tailY[i] == headYPos)
-	{
-		isGameOver = true;
-	}
+		{
+			isHeadHitTail = true;
+			GameOverScene(isSnakePoisoned, isHeadHitTail);
+		}
 	}
 
 	if (headXPos == foodXPos && headYPos == foodYPos)
 	{
 		++tailLength;
 		score += 10;
-		//srand(time(0));
 		foodXPos = rand() % mapWidth;
 		foodYPos = rand() % mapHeight;
 	}
 }
 
-int main() 
+void GameOverScene(bool snakePoisoned, bool snakeCollided)
 {
-	PlayerChoice();
+	system("cls");
+	wprintf(L"\x1b[34;46m\r\n");
+	cout << "YOU LOST!!!" << endl << endl;
+	cout << "Your Score is " << score << endl << endl << endl;
+	wprintf(L"\x1b[0m\r\n");
+	wprintf(L"\x1b[39m\r\n");
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 11);
+	if (snakePoisoned && !snakeCollided)
+	{
+		cout << "You lose, snake has been poisoned." << endl;
+	}
+	else if (!snakePoisoned && snakeCollided)
+	{
+		cout << "You lose, snake has collided with its tail." << endl;
+	}
+	isGameOver = true;
+}
+
+void main() 
+{
+	int restartKey; 
+
+	if (!isChooseCompleted)
+	{
+		PlayerChoice();
+	}
 
 	if (isChooseCompleted)
 	{
@@ -482,7 +492,32 @@ int main()
 		Draw();
 		Input();
 		Logic();
-		Sleep(60);
+		Sleep(snakeSpeed);
 	}
-	return 0;
+
+	while (isGameOver)
+	{
+		cout << "Press any number key between 0 - 9 to restart the game" << endl;
+		cin >> restartKey;
+		cout << endl << endl << endl;
+		if (restartKey >= 0 && restartKey <= 9)
+		{
+			RestartGame();
+		}
+		else
+		{
+			cout << "Press any number key to restart the game" << endl;
+			cin >> restartKey;
+			cout << endl << endl << endl;
+		}
+	}
+}
+
+void RestartGame()
+{
+	tailLength = 0;
+	score = 0;
+	isChooseCompleted = false;
+	isGameOver = false;
+	PlayerChoice();
 }
