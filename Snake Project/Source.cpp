@@ -7,14 +7,6 @@ using namespace std;
 
 bool isGameOver;
 
-const int width0 = 10;
-const int width1 = 20;
-const int width2 = 30;
-
-const int height0 = 10;
-const int height1 = 20;
-const int height2 = 30;
-
 int headXPos;
 int headYPos;
 
@@ -25,7 +17,7 @@ int poisonFoodYPos0;
 
 int mapWidth;
 int mapHeight;
-int snakeType;
+int snakeChosen;
 
 int score;
 
@@ -48,46 +40,93 @@ enum eDirection
 
 eDirection dir;
 
-int SetMapWidth(char choice);
-int SetMapHeight(char choice);
-int SetSnakeType(char choice);
 void GameOverScene(bool snakePoisoned, bool snakeCollided);
 void RestartGame();
 void main();
 
-//void gotoxy(int x, int y)
-//{
-//	COORD coord;
-//	coord.X = x;
-//	coord.Y = y;
-//	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
-//}
+class GameSetting
+{
+private:
+	int playerChoiceWidth;
+	int playerChoiceHeight;
+	int playerChoiceSnake;
+
+public:
+	void SetWidth(int width)
+	{
+		playerChoiceWidth = width;
+	}
+
+	void SetHeight(int height)
+	{
+		playerChoiceHeight = height;
+	}
+
+	void SetSnake(char snake)
+	{
+		int snakeType;
+		switch (snake)
+		{
+		case 'Q': case 'q':
+			snakeType = 4;
+			snakeSpeed = 175;
+			break;
+		case 'W': case 'w':
+			snakeType = 5;
+			snakeSpeed = 162;
+			break;
+		case 'E': case 'e':
+			snakeType = 6;
+			snakeSpeed = 150;
+			break;
+		}
+		playerChoiceSnake = snakeType;
+	}
+
+	int GetMapWidth()
+	{
+		return playerChoiceWidth;
+	}
+
+	int GetMapHeight()
+	{
+		return playerChoiceHeight;
+	}
+
+	int GetSnakeType()
+	{
+		return playerChoiceSnake;
+	}
+};
 
 void PlayerChoice()
 {
-	char playerChoiceSnake;
-	int  playerChoiceWidth, playerChoiceHeight;
+	GameSetting playerChoice;
+	char snakeType;
+	int  width, height;
 
 	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 11);
 	do
 	{
 		cout << "Enter the width of the map." << endl;
 		cout << "From 10 - 30." << endl;
-		cin >> playerChoiceWidth;
+		cin >> width;
+		playerChoice.SetWidth(width);
 		cout << endl << endl << endl;
-	} while (playerChoiceWidth < 10 || playerChoiceWidth > 30);
+	} while (width < 10 || width > 30);
 
-	mapWidth = playerChoiceWidth;
+	mapWidth = playerChoice.GetMapWidth();
 
 	do
 	{
 		cout << "Enter the height of the map." << endl;
 		cout << "From 10 - 30." << endl;
-		cin >> playerChoiceHeight;
+		cin >> height;
+		playerChoice.SetHeight(height);
 		cout << endl << endl << endl;
-	} while (playerChoiceHeight < 10 || playerChoiceHeight > 30);
+	} while (height < 10 || height > 30);
 
-	mapHeight = playerChoiceHeight;
+	mapHeight = playerChoice.GetMapHeight();
 
 	cout << "The map size is " << mapWidth << " X " << mapHeight << endl;
 
@@ -97,36 +136,16 @@ void PlayerChoice()
 		cout << "Press 'Q' to choose @ snake that moves 4 steps in a second" << endl;
 		cout << "Press 'W' to choose # snake that moves 5 steps in a second" << endl;
 		cout << "Press 'E' to choose $ snake that moves 6 steps in a second" << endl;
-		cin >> playerChoiceSnake;
-	} while (playerChoiceSnake != 'q' && playerChoiceSnake != 'w' && playerChoiceSnake != 'e'
-		&& playerChoiceSnake != 'Q' && playerChoiceSnake != 'W' && playerChoiceSnake != 'E');
+		cin >> snakeType;
+		playerChoice.SetSnake(snakeType);
+	} while (snakeType != 'q' && snakeType != 'w' && snakeType != 'e'
+		&& snakeType != 'Q' && snakeType != 'W' && snakeType != 'E');
 
-	snakeType = SetSnakeType(playerChoiceSnake);
+	snakeChosen = playerChoice.GetSnakeType();
 	cout << "The snake you choose moves " << snakeType << " steps in a second" << endl;
 
 	isChooseCompleted = true;	
 	main();
-}
-
-int SetSnakeType(char choice)
-{
-	int snakeType;
-	switch (choice)
-	{
-	case 'Q': case 'q':
-		snakeType = 4;
-		snakeSpeed = 175;
-		break;
-	case 'W': case 'w':
-		snakeType = 5;
-		snakeSpeed = 162;
-		break;
-	case 'E': case 'e':
-		snakeType = 6;
-		snakeSpeed = 150;
-		break;
-	}
-	return snakeType;
 }
 
 void Setup()
@@ -134,7 +153,6 @@ void Setup()
 	srand(time(0));
 	isGameOver = false;
 	dir = UP;
-	//gotoxy(mapWidth / 2, mapHeight / 2);
 	headXPos = mapWidth / 2;
 	headYPos = mapHeight / 2;
 	foodXPos = rand() % mapWidth;
@@ -173,17 +191,17 @@ void Draw()
 
 			if (i == headYPos && j == headXPos + 45)
 			{
-				if (snakeType == 4)
+				if (snakeChosen == 4)
 				{
 					SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 14);
 					cout << "@";
 				}
-				else if (snakeType == 5)
+				else if (snakeChosen == 5)
 				{
 					SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 14);
 					cout << "#";
 				}
-				else if (snakeType == 6)
+				else if (snakeChosen == 6)
 				{
 					SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 14);
 					cout << "$";
@@ -191,17 +209,17 @@ void Draw()
 			}
 			else if (i == foodYPos && j == foodXPos + 45)
 			{
-				if (snakeType == 4)
+				if (snakeChosen == 4)
 				{
 					SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
 					cout << "@";
 				}
-				else if (snakeType == 5)
+				else if (snakeChosen == 5)
 				{
 					SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
 					cout << "#";
 				}
-				else if (snakeType == 6)
+				else if (snakeChosen == 6)
 				{
 					SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
 					cout << "$";
@@ -209,17 +227,17 @@ void Draw()
 			}
 			else if (i == poisonFoodYPos0 && j == poisonFoodXPos0  + 45)
 			{
-				if (snakeType == 4)
+				if (snakeChosen == 4)
 				{
 					SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 10);
 					cout << "!";
 				}
-				else if (snakeType == 5)
+				else if (snakeChosen == 5)
 				{
 					SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 10);
 					cout << "+";
 				}
-				else if (snakeType == 6)
+				else if (snakeChosen == 6)
 				{
 					SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 10);
 					cout << "&";
@@ -340,71 +358,19 @@ void Logic()
 	switch (dir)
 	{
 	case LEFT:
-		if (snakeType == 4)
-		{
-			--headXPos;
-		}
-		else if (snakeType == 5)
-		{
-			//headXPos -= 2;
-			--headXPos;
-		}
-		else if (snakeType == 6)
-		{
-			//headXPos -= 3;
-			--headXPos;
-		}
+		--headXPos;
 		break;
 
 	case RIGHT:
-		if (snakeType == 4)
-		{
-			++headXPos;
-		}
-		else if (snakeType == 5)
-		{
-			//headXPos += 2;
-			++headXPos;
-		}
-		else if (snakeType == 6)
-		{
-			//headXPos += 3;
-			++headXPos;
-		}
+		++headXPos;
 		break;
 
 	case UP:
-		if (snakeType == 4)
-		{
-			--headYPos;
-		}
-		else if (snakeType == 5)
-		{
-			//headYPos -= 2;
-			--headYPos;
-		}
-		else if (snakeType == 6)
-		{
-			//headYPos -= 3;
-			--headYPos;
-		}
+		--headYPos;
 		break;
 
 	case DOWN:
-		if (snakeType == 4)
-		{
-			++headYPos;
-		}
-		else if (snakeType == 5)
-		{
-			//headYPos += 2;
-			++headYPos;
-		}
-		else if (snakeType == 6)
-		{
-			//headYPos += 3;
-			++headYPos;
-		}
+		++headYPos;
 		break;
 
 	default:
